@@ -42,9 +42,9 @@ class DataPlotterApp:
         # lambda function required to prevent the function from auto running
         tk.Button(self.root, text="Browse...", command=lambda: self.file_selector.load_file(self.entry_file1, [self.dropdown_var1a, self.dropdown_var1b], [dropdown1a, dropdown1b])).grid(row=0, column=2, padx=5, pady=5)
         dropdown1a.grid(row=1, column=1, padx=5, pady=5)
-        tk.Label(self.root, text="Topic 1:").grid(row=1, column=0, padx=5, pady=5)
+        tk.Label(self.root, text="Topic 1 (Top Plot):").grid(row=1, column=0, padx=5, pady=5)
         dropdown1b.grid(row=2, column=1, padx=5, pady=5)
-        tk.Label(self.root, text="Topic 2:").grid(row=2, column=0, padx=5, pady=5)
+        tk.Label(self.root, text="Topic 2 (Bottom Plot):").grid(row=2, column=0, padx=5, pady=5)
 
         # File 2
         tk.Label(self.root, text="Rosbag 2:").grid(row=3, column=0, padx=5, pady=5)
@@ -54,7 +54,9 @@ class DataPlotterApp:
         dropdown2b = tk.OptionMenu(self.root, self.dropdown_var2b, "")
         tk.Button(self.root, text="Browse...", command=lambda: self.file_selector.load_file(self.entry_file2, [self.dropdown_var2a, self.dropdown_var2b], [dropdown2a, dropdown2b])).grid(row=3, column=2, padx=5, pady=5)
         dropdown2a.grid(row=4, column=1, padx=5, pady=5)
+        tk.Label(self.root, text="Topic 1 (Top Plot):").grid(row=4, column=0, padx=5, pady=5)
         dropdown2b.grid(row=5, column=1, padx=5, pady=5)
+        tk.Label(self.root, text="Topic 2 (Bottom Plot):").grid(row=5, column=0, padx=5, pady=5)
 
         # Shift seconds for file 1
         tk.Label(self.root, text="X-axis left-shift for Rosbag 1:").grid(row=6, column=0, padx=5, pady=5)
