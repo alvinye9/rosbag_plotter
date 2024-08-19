@@ -3,8 +3,6 @@
 Originally built for Purdue AI Racing but can be used for easy plotting of csv data exported from plotjuggler.
 This GUI can handle non-time-series plots as well as multiple line plots for easy data comparison.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ## Prerequisites
 
 To utilize this app, you must have csv data exported from plotjuggler in the following steps:
@@ -26,10 +24,3 @@ This will launch the GUI
 3. (optional) Specify values to offset the x-axis of either plot.
 4. (optional) Specify y-axis limits or check the box to allow matplotlib to auto-format them
 5. (optional) You can check the "Use Another Value for X-axis" box to specify just that, by default it is a time-series plot
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-
-
