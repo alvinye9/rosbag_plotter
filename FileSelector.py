@@ -14,6 +14,7 @@ class FileSelector:
             entry.delete(0, tk.END)
             entry.insert(0, file_path)
             self.populate_dropdown(file_path, dropdown_vars, dropdowns)
+        return file_path
 
     def populate_dropdown(self, file_path, dropdown_vars, dropdowns):
         try:

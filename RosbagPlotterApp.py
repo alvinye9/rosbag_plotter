@@ -16,11 +16,18 @@ class DataPlotterApp:
         self.dropdown_var1b = tk.StringVar(root)
         self.dropdown_var2a = tk.StringVar(root)
         self.dropdown_var2b = tk.StringVar(root)
-        self.auto_y_axis_var = tk.IntVar(value=0)  # Variable for the checkbutton
+        self.auto_y_axis_var = tk.IntVar(value=0)  
+        self.use_custom_x_var = tk.IntVar(value=0)  
+
+        self.dropdown_var_x1 = tk.StringVar(root)
+        self.dropdown_var_x2 = tk.StringVar(root)
 
         # Initialize the FileSelector and PlotManager
         self.file_selector = FileSelector(root)
         self.plot_manager = PlotManager()
+        
+        # Store OptionMenu references
+        self.option_menus = []
 
         # Setup the GUI components
         self.setup_gui()
@@ -32,6 +39,7 @@ class DataPlotterApp:
         self.entry_file1.grid(row=0, column=1, padx=5, pady=5)
         dropdown1a = tk.OptionMenu(self.root, self.dropdown_var1a, "")
         dropdown1b = tk.OptionMenu(self.root, self.dropdown_var1b, "")
+        # lambda function required to prevent the function from auto running
         tk.Button(self.root, text="Browse...", command=lambda: self.file_selector.load_file(self.entry_file1, [self.dropdown_var1a, self.dropdown_var1b], [dropdown1a, dropdown1b])).grid(row=0, column=2, padx=5, pady=5)
         dropdown1a.grid(row=1, column=1, padx=5, pady=5)
         tk.Label(self.root, text="Topic 1:").grid(row=1, column=0, padx=5, pady=5)
@@ -79,10 +87,31 @@ class DataPlotterApp:
         self.entry_y_max_2.insert(0, "10.0")
 
         # Auto-format Y-axis checkbox
-        tk.Checkbutton(self.root, text="Auto-format Y-axis", variable=self.auto_y_axis_var).grid(row=10, column=1, padx=5, pady=5, sticky="W")
+        tk.Checkbutton(self.root, text="Auto-scale Y-axis", variable=self.auto_y_axis_var).grid(row=10, column=1, padx=5, pady=5, sticky="W")
+        
+        # Use another value for X-axis checkbox
+        tk.Checkbutton(self.root, text="Use another value for X-axis", variable=self.use_custom_x_var, command=self.toggle_x_axis_dropdowns).grid(row=11, column=1, padx=5, pady=5, sticky="W")
 
+        # X-axis dropdowns (initially hidden)
+        self.dropdown_x1 = tk.OptionMenu(self.root, self.dropdown_var_x1, "")
+        self.dropdown_x2 = tk.OptionMenu(self.root, self.dropdown_var_x2, "")
+        self.option_menus.extend([self.dropdown_x1, self.dropdown_x2])
+        
         # Start plotting button
-        tk.Button(self.root, text="Plot Data", command=self.start_plotting).grid(row=11, column=0, columnspan=3, pady=10)
+        tk.Button(self.root, text="Plot Data", command=self.start_plotting).grid(row=15, column=0, columnspan=3, pady=10)
+
+    def toggle_x_axis_dropdowns(self):
+        """Show or hide X-axis dropdowns based on checkbox."""
+        if self.use_custom_x_var.get():
+            self.dropdown_x1.grid(row=12, column=1, padx=5, pady=5)
+            self.dropdown_x2.grid(row=12, column=2, padx=5, pady=5)
+            
+            self.file_selector.populate_dropdown(self.entry_file1.get(), [self.dropdown_var_x1], [self.dropdown_x1])
+            self.file_selector.populate_dropdown(self.entry_file2.get(), [self.dropdown_var_x2], [self.dropdown_x2])
+                
+        else:
+            self.dropdown_x1.grid_remove()
+            self.dropdown_x2.grid_remove()
 
     def start_plotting(self):
         file1_path = self.entry_file1.get()
@@ -103,11 +132,18 @@ class DataPlotterApp:
         topics2 = [self.dropdown_var2a.get(), self.dropdown_var2b.get()]
         auto_y_axis = bool(self.auto_y_axis_var.get())
 
-        y_limits = {
-            'lateral_error': [float(self.entry_y_min_1.get()), float(self.entry_y_max_1.get())],
-            'other': [float(self.entry_y_min_2.get()), float(self.entry_y_max_2.get())]
-        }
+        if self.use_custom_x_var.get():
+            # print("Use custom x axis")
+            x_axis1 = self.dropdown_var_x1.get()
+            x_axis2 = self.dropdown_var_x2.get()
+        else:
+            x_axis1 = x_axis2 = '__time'
 
+        y_limits = {
+            'topic 1': [float(self.entry_y_min_1.get()), float(self.entry_y_max_1.get())],
+            'topic 2': [float(self.entry_y_min_2.get()), float(self.entry_y_max_2.get())]
+        }
+        
         try:
             df1 = pd.read_csv(file1_path)
             df2 = pd.read_csv(file2_path)
@@ -121,7 +157,7 @@ class DataPlotterApp:
             df1_shifted = self.plot_manager.shift_data(df1.copy(), shift_seconds)
             df2_shifted = self.plot_manager.shift_data(df2.copy(), shift_seconds_2)
 
-            self.plot_manager.plot_data(df1_shifted, df2_shifted, topics1, topics2, y_lims=y_limits, auto_y_axis=auto_y_axis)
+            self.plot_manager.plot_data(df1_shifted, df2_shifted, topics1, topics2, x_axis1, x_axis2, y_lims=y_limits, auto_y_axis=auto_y_axis)
 
         except ValueError as ve:
             messagebox.showerror("Error", str(ve))
