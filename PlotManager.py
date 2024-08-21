@@ -10,7 +10,7 @@ class PlotManager:
         return df
 
     @staticmethod
-    def plot_data(df1, df2, topics1, topics2, x_axis1, x_axis2, y_lims=None, auto_y_axis=False):
+    def plot_data(df1, df2, topics1, topics2, x_axis1, x_axis2, y_lims=None, x_lims = None, auto_y_axis=False, custom_x_limits = False):
         for topic in topics1 + topics2:
             if topic not in df1.columns and topic not in df2.columns:
                 raise ValueError(f"Topic {topic} not found in the respective CSV files.")
@@ -27,6 +27,9 @@ class PlotManager:
             axs[0].set_ylim(y_lims['topic 1'])
         # axs[0].set_title('First Topic Comparison')
 
+        if custom_x_limits and x_lims and 'x min and max' in x_lims:
+            axs[1].set_xlim(x_lims['x min and max'])
+        
         # Plot second topic for each file
         axs[1].plot(df1[x_axis1], df1[topics1[1]], label=f'Rosbag 1', drawstyle='default')
         axs[1].plot(df2[x_axis2], df2[topics2[1]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
