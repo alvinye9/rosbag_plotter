@@ -35,9 +35,9 @@ class PlotManager:
         self.track_pos_topics = track_pos_topics
 
         if plot_track_pos:
-            self.figure, self.axs = plt.subplots(3, 1, figsize=(10, 18))
+            self.figure, self.axs = plt.subplots(3, 1, figsize=(8, 12))
         else:
-            self.figure, self.axs = plt.subplots(2, 1, figsize=(10, 14))
+            self.figure, self.axs = plt.subplots(2, 1, figsize=(8, 8))
 
         # Plot first topic for each file
         self.axs[0].plot(df1[x_axis1], df1[topics1[0]], label=f'Rosbag 1', drawstyle='default')
@@ -116,9 +116,11 @@ class PlotManager:
 
         # Plot the track position if applicable
         if self.track_plot is not None and self.track_pos_topics is not None:
+            self.track_plot.set_aspect('equal')
             x_pos_topic, y_pos_topic = self.track_pos_topics
             track_point1, = self.track_plot.plot(self.df1[x_pos_topic].iloc[idx1], self.df1[y_pos_topic].iloc[idx1], 'ro')
             track_point2, = self.track_plot.plot(self.df2[x_pos_topic].iloc[idx2], self.df2[y_pos_topic].iloc[idx2], 'ro')
             self.track_position_points.extend([track_point1, track_point2])
+            
 
         self.figure.canvas.draw_idle()
