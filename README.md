@@ -29,3 +29,7 @@ This will launch the GUI
 
 Here is an example of what the plot may look like along with the corresponding GUI inputs:
 
+![image](https://github.com/user-attachments/assets/1c4a057a-0aad-4da1-93cf-1fca9a27593f)
+
+![image](https://github.com/user-attachments/assets/8f02dc70-d462-4670-accd-ba74bddbc6e0)
+
