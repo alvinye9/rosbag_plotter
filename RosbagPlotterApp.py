@@ -94,7 +94,7 @@ class DataPlotterApp:
         tk.Checkbutton(self.root, text="Auto-scale Y-axis", variable=self.auto_y_axis_var).grid(row=10, column=1, padx=5, pady=5, sticky="W")
 
         # Custom Format X-axis checkbox
-        tk.Checkbutton(self.root, text="Custom X-axis limits", variable=self.custom_x_axis_var, command=self.toggle_x_axis_limit_entries).grid(row=11, column=1, padx=5, pady=5, sticky="W")
+        tk.Checkbutton(self.root, text="Custom X-axis limits (min, max)", variable=self.custom_x_axis_var, command=self.toggle_x_axis_limit_entries).grid(row=11, column=1, padx=5, pady=5, sticky="W")
 
         # Use another value for X-axis checkbox
         tk.Checkbutton(self.root, text="Use another value for X-axis", variable=self.use_custom_x_var, command=self.toggle_x_axis_dropdowns).grid(row=12, column=1, padx=5, pady=5, sticky="W")
@@ -112,8 +112,8 @@ class DataPlotterApp:
     def toggle_x_axis_dropdowns(self):
         """Show or hide X-axis dropdowns based on checkbox."""
         if self.use_custom_x_var.get():
-            self.dropdown_x1.grid(row=13, column=3, padx=5, pady=5)
-            self.dropdown_x2.grid(row=13, column=4, padx=5, pady=5)
+            self.dropdown_x1.grid(row=12, column=2, padx=5, pady=5)
+            self.dropdown_x2.grid(row=12, column=3, padx=5, pady=5)
             
             self.file_selector.populate_dropdown(self.entry_file1.get(), [self.dropdown_var_x1], [self.dropdown_x1])
             self.file_selector.populate_dropdown(self.entry_file2.get(), [self.dropdown_var_x2], [self.dropdown_x2])
@@ -124,8 +124,8 @@ class DataPlotterApp:
             
     def toggle_x_axis_limit_entries(self):
         if self.custom_x_axis_var.get():
-            self.entry_x_min.grid(row=13, column=0, padx=5, pady=5)
-            self.entry_x_max.grid(row=13, column=1, padx=5, pady=5)        
+            self.entry_x_min.grid(row=11, column=2, padx=5, pady=5)
+            self.entry_x_max.grid(row=11, column=3, padx=5, pady=5)        
         else:
             self.entry_x_min.grid_remove()
             self.entry_x_max.grid_remove()
