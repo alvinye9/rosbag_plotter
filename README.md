@@ -24,3 +24,8 @@ This will launch the GUI
 3. (optional) Specify values to offset the x-axis of either plot.
 4. (optional) Specify y-axis limits or check the box to allow matplotlib to auto-format them
 5. (optional) You can check the "Use Another Value for X-axis" box to specify just that, by default it is a time-series plot
+   - It is recommended you use either time or an "s" value to denote distance along the track
+6. (optional) Check "Plot Track Positions"  to have a scrollable 3rd smaller plot for the xy positions along the track
+
+Here is an example of what the plot may look like along with the corresponding GUI inputs:
+
