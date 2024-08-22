@@ -20,9 +20,13 @@ class DataPlotterApp:
         self.auto_y_axis_var = tk.IntVar(value=0)  
         self.use_custom_x_var = tk.IntVar(value=0)  
         self.custom_x_axis_var = tk.IntVar(value = 0)
+        self.plot_track = tk.IntVar(value= 0)
 
         self.dropdown_var_x1 = tk.StringVar(root)
         self.dropdown_var_x2 = tk.StringVar(root)
+        
+        self.dropdown_var_x_pos = tk.StringVar(root)
+        self.dropdown_var_y_pos = tk.StringVar(root)
 
         # Initialize the FileSelector and PlotManager
         self.file_selector = FileSelector(root)
@@ -97,18 +101,35 @@ class DataPlotterApp:
         tk.Checkbutton(self.root, text="Custom X-axis limits (min, max)", variable=self.custom_x_axis_var, command=self.toggle_x_axis_limit_entries).grid(row=11, column=1, padx=5, pady=5, sticky="W")
 
         # Use another value for X-axis checkbox
-        tk.Checkbutton(self.root, text="Use another value for X-axis", variable=self.use_custom_x_var, command=self.toggle_x_axis_dropdowns).grid(row=12, column=1, padx=5, pady=5, sticky="W")
+        tk.Checkbutton(self.root, text="Use another variable for X-axis (1st and 2nd Plot)", variable=self.use_custom_x_var, command=self.toggle_x_axis_dropdowns).grid(row=12, column=1, padx=5, pady=5, sticky="W")
+
+        # Plot 2D Track Positions checkbox
+        tk.Checkbutton(self.root, text="Plot Track Positions (Choose x,y topics)", variable=self.plot_track, command=self.toggle_x_y_dropdown).grid(row=13, column=1, padx=5, pady=5, sticky="W")
 
         # X-axis dropdowns (initially hidden)
         self.dropdown_x1 = tk.OptionMenu(self.root, self.dropdown_var_x1, "")
         self.dropdown_x2 = tk.OptionMenu(self.root, self.dropdown_var_x2, "")
         self.entry_x_min = tk.Entry(self.root, width=10)
         self.entry_x_max = tk.Entry(self.root, width=10)
-        self.option_menus.extend([self.dropdown_x1, self.dropdown_x2, self.entry_x_min, self.entry_x_max])
+        self.dropdown_x_pos = tk.OptionMenu(self.root, self.dropdown_var_x_pos, "")
+        self.dropdown_y_pos = tk.OptionMenu(self.root, self.dropdown_var_y_pos, "")
+        self.option_menus.extend([self.dropdown_x1, self.dropdown_x2, self.entry_x_min, self.entry_x_max, self.dropdown_x_pos, self.dropdown_y_pos])
         
         # Start plotting button
         tk.Button(self.root, text="Plot Data", command=self.start_plotting).grid(row=15, column=0, columnspan=3, pady=10)
 
+    def toggle_x_y_dropdown(self):
+        if self.plot_track.get():
+            self.dropdown_x_pos.grid(row=13, column=2, padx=5, pady=5)
+            self.dropdown_y_pos.grid(row=13, column=3, padx=5, pady=5)
+            
+            self.file_selector.populate_dropdown(self.entry_file1.get(), [self.dropdown_var_x_pos], [self.dropdown_x_pos])
+            self.file_selector.populate_dropdown(self.entry_file2.get(), [self.dropdown_var_y_pos], [self.dropdown_y_pos])
+        else:
+            self.dropdown_x_pos.grid_remove()
+            self.dropdown_y_pos.grid_remove()       
+            
+    
     def toggle_x_axis_dropdowns(self):
         """Show or hide X-axis dropdowns based on checkbox."""
         if self.use_custom_x_var.get():
@@ -147,10 +168,12 @@ class DataPlotterApp:
 
         topics1 = [self.dropdown_var1a.get(), self.dropdown_var1b.get()]
         topics2 = [self.dropdown_var2a.get(), self.dropdown_var2b.get()]
+        
+         # Handle the case that user wants to auto format y-axis
         auto_y_axis = bool(self.auto_y_axis_var.get())
 
+        # Handle the case that user wants to use custom variable for x-axis
         if self.use_custom_x_var.get():
-            # print("Use custom x axis")
             x_axis1 = self.dropdown_var_x1.get()
             x_axis2 = self.dropdown_var_x2.get()
         else:
@@ -158,6 +181,8 @@ class DataPlotterApp:
         
         x_limits = None 
         custom_x_limits = False
+        
+        # Handle the case that user wants to specify x-axis limits 
         if self.custom_x_axis_var.get():
             custom_x_limits = True
             x_limits = {
@@ -169,6 +194,9 @@ class DataPlotterApp:
             'topic 2': [float(self.entry_y_min_2.get()), float(self.entry_y_max_2.get())]
         }
 
+        # Handle the case that user wants to plot 2D track
+        plot_track_positions = bool(self.plot_track.get())
+        track_position_topics = [self.dropdown_var_x_pos.get(), self.dropdown_var_y_pos.get()]
         
         try:
             df1 = pd.read_csv(file1_path)
@@ -183,7 +211,7 @@ class DataPlotterApp:
             df1_shifted = self.plot_manager.shift_data(df1.copy(), shift_seconds)
             df2_shifted = self.plot_manager.shift_data(df2.copy(), shift_seconds_2)
 
-            self.plot_manager.plot_data(df1_shifted, df2_shifted, topics1, topics2, x_axis1, x_axis2, y_lims=y_limits, x_lims=x_limits, auto_y_axis=auto_y_axis, custom_x_limits=custom_x_limits)
+            self.plot_manager.plot_data(df1_shifted, df2_shifted, topics1, topics2, x_axis1, x_axis2, y_lims=y_limits, x_lims=x_limits, auto_y_axis=auto_y_axis, custom_x_limits=custom_x_limits, plot_track_pos=plot_track_positions, track_pos_topics= track_position_topics)
 
         except ValueError as ve:
             messagebox.showerror("Error", str(ve))

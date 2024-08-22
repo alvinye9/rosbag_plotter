@@ -15,6 +15,9 @@ class PlotManager:
         self.x_axis1 = None
         self.x_axis2 = None
         self.point_plots = []
+        self.track_plot = None
+        self.track_position_points = []
+        self.track_pos_topics = None
 
     @staticmethod
     def shift_data(df, t):
@@ -22,19 +25,19 @@ class PlotManager:
         df = df[df['__time'] >= 0]
         return df
 
-    def plot_data(self, df1, df2, topics1, topics2, x_axis1, x_axis2, y_lims=None, x_lims=None, auto_y_axis=False, custom_x_limits=False):
+    def plot_data(self, df1, df2, topics1, topics2, x_axis1, x_axis2, y_lims=None, x_lims=None, auto_y_axis=False, custom_x_limits=False, plot_track_pos=False, track_pos_topics=None):
         self.df1 = df1
         self.df2 = df2
         self.topics1 = topics1
         self.topics2 = topics2
         self.x_axis1 = x_axis1
         self.x_axis2 = x_axis2
-        for topic in topics1 + topics2:
-            if topic not in df1.columns and topic not in df2.columns:
-                raise ValueError(f"Topic {topic} not found in the respective CSV files.")
+        self.track_pos_topics = track_pos_topics
 
-        # Create a new figure and axes
-        self.figure, self.axs = plt.subplots(2, 1, figsize=(10, 14))
+        if plot_track_pos:
+            self.figure, self.axs = plt.subplots(3, 1, figsize=(10, 18))
+        else:
+            self.figure, self.axs = plt.subplots(2, 1, figsize=(10, 14))
 
         # Plot first topic for each file
         self.axs[0].plot(df1[x_axis1], df1[topics1[0]], label=f'Rosbag 1', drawstyle='default')
@@ -57,6 +60,16 @@ class PlotManager:
             self.axs[1].set_ylim(y_lims['topic 2'])
         if custom_x_limits and x_lims and 'x min and max' in x_lims:
             self.axs[1].set_xlim(x_lims['x min and max'])
+
+        # Plot track positions if the option is selected
+        if plot_track_pos:
+            x_pos_topic, y_pos_topic = track_pos_topics
+            self.track_plot = self.axs[2]
+            self.track_plot.plot(df1[x_pos_topic], df1[y_pos_topic], label=f'Track Position Rosbag 1', linestyle='-', color='b')
+            self.track_plot.plot(df2[x_pos_topic], df2[y_pos_topic], label=f'Track Position Rosbag 2', linestyle='--', color='g')
+            self.track_plot.set_xlabel('X Position')
+            self.track_plot.set_ylabel('Y Position')
+            self.track_plot.legend()
 
         # Add a slider for x-axis control
         self.add_slider(df1[x_axis1])
@@ -82,6 +95,11 @@ class PlotManager:
             point.remove()
         self.point_plots.clear()
 
+        # Clear previous track position points
+        for point in self.track_position_points:
+            point.remove()
+        self.track_position_points.clear()
+
         # Get the closest index in the x data to the slider value
         idx1 = (self.df1[self.x_axis1] - val).abs().idxmin()
         idx2 = (self.df2[self.x_axis2] - val).abs().idxmin()
@@ -96,72 +114,11 @@ class PlotManager:
         # Store the points so they can be removed next time
         self.point_plots.extend([point1a, point2a, point1b, point2b])
 
+        # Plot the track position if applicable
+        if self.track_plot is not None and self.track_pos_topics is not None:
+            x_pos_topic, y_pos_topic = self.track_pos_topics
+            track_point1, = self.track_plot.plot(self.df1[x_pos_topic].iloc[idx1], self.df1[y_pos_topic].iloc[idx1], 'ro')
+            track_point2, = self.track_plot.plot(self.df2[x_pos_topic].iloc[idx2], self.df2[y_pos_topic].iloc[idx2], 'ro')
+            self.track_position_points.extend([track_point1, track_point2])
+
         self.figure.canvas.draw_idle()
-
-
-
-# import matplotlib.pyplot as plt
-# from matplotlib.widgets import Slider, Button
-
-# class PlotManager:
-#     """Data processing and plotting."""
-#     def __init__(self):
-#         self.figure = plt.Figure(figsize=(10, 14))
-#         self.slider = None
-
-#     def add_slider(self, ax, x_data):
-#         """Add a slider to control the x-axis."""
-#         # Define slider position and size
-#         ax_slider = plt.axes([0.2, 0.02, 0.65, 0.03], facecolor='lightgoldenrodyellow')
-
-#         # Create the slider with range based on x_data
-#         self.slider = Slider(ax_slider, 'X-Axis', min(x_data), max(x_data), valinit=min(x_data))
-
-#         # Update the plot when the slider is moved
-#         self.slider.on_changed(lambda val: self.update_x_axis(ax, val))
-
-#     def update_x_axis(self, ax, val):
-#         """Update the x-axis limits based on the slider value."""
-#         ax.set_xlim([val, val + (ax.get_xlim()[1] - ax.get_xlim()[0])])
-#         plt.draw()
-        
-#     @staticmethod
-#     def shift_data(df, t):
-#         df['__time'] = df['__time'] - t
-#         df = df[df['__time'] >= 0]
-#         return df
-
-#     @staticmethod
-#     def plot_data(df1, df2, topics1, topics2, x_axis1, x_axis2, y_lims=None, x_lims = None, auto_y_axis=False, custom_x_limits = False):
-#         for topic in topics1 + topics2:
-#             if topic not in df1.columns and topic not in df2.columns:
-#                 raise ValueError(f"Topic {topic} not found in the respective CSV files.")
-
-#         fig, axs = plt.subplots(2, 1, figsize=(10, 14))
-
-#         # Plot first topic for each file
-#         axs[0].plot(df1[x_axis1], df1[topics1[0]], label=f'Rosbag 1', drawstyle='default')
-#         axs[0].plot(df2[x_axis2], df2[topics2[0]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
-#         axs[0].set_xlabel(x_axis1)
-#         axs[0].set_ylabel(topics1[0])
-#         axs[0].legend()
-#         if not auto_y_axis and y_lims and 'topic 1' in y_lims:
-#             axs[0].set_ylim(y_lims['topic 1'])
-#         # axs[0].set_title('First Topic Comparison')
-
-#         if custom_x_limits and x_lims and 'x min and max' in x_lims:
-#             axs[1].set_xlim(x_lims['x min and max'])
-        
-#         # Plot second topic for each file
-#         axs[1].plot(df1[x_axis1], df1[topics1[1]], label=f'Rosbag 1', drawstyle='default')
-#         axs[1].plot(df2[x_axis2], df2[topics2[1]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
-#         axs[1].set_xlabel(x_axis1)
-#         axs[1].set_ylabel(topics2[1])
-#         axs[1].legend()
-#         if not auto_y_axis and y_lims and 'topic 2' in y_lims:
-#             axs[1].set_ylim(y_lims['topic 2'])
-#         # axs[1].set_title('Second Topic Comparison')
-
-#         plt.tight_layout()
-#         plt.show()
-        
