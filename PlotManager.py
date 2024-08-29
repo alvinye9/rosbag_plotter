@@ -25,13 +25,17 @@ class PlotManager:
         df = df[df['__time'] >= 0]
         return df
 
-    def plot_data(self, df1, df2, topics1, topics2, x_axis1, x_axis2, y_lims=None, x_lims=None, auto_y_axis=False, custom_x_limits=False, plot_track_pos=False, track_pos_topics=None):
+    def plot_data(self, df1, df2, df3, topics1, topics2, topics3, x_axis1, x_axis2, x_axis3, y_lims=None, x_lims=None, auto_y_axis=False, custom_x_limits=False, plot_track_pos=False, track_pos_topics=None):
+        #topics 1 is all the data for file 1
+        
         self.df1 = df1
         self.df2 = df2
         self.topics1 = topics1
         self.topics2 = topics2
+        self.topics3 = topics3
         self.x_axis1 = x_axis1
         self.x_axis2 = x_axis2
+        self.x_axis3 = x_axis3
         self.track_pos_topics = track_pos_topics
 
         if plot_track_pos:
@@ -42,6 +46,8 @@ class PlotManager:
         # Plot first topic for each file
         self.axs[0].plot(df1[x_axis1], df1[topics1[0]], label=f'Rosbag 1', drawstyle='default')
         self.axs[0].plot(df2[x_axis2], df2[topics2[0]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
+        if df3 is not None:
+            self.axs[0].plot(df3[x_axis3], df3[topics3[0]], label=f'Rosbag 3', drawstyle='default', linestyle=':')
         self.axs[0].set_xlabel(x_axis1)
         self.axs[0].set_ylabel(topics1[0])
         self.axs[0].legend()
@@ -53,6 +59,8 @@ class PlotManager:
         # Plot second topic for each file
         self.axs[1].plot(df1[x_axis1], df1[topics1[1]], label=f'Rosbag 1', drawstyle='default')
         self.axs[1].plot(df2[x_axis2], df2[topics2[1]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
+        if df3 is not None:
+            self.axs[1].plot(df3[x_axis3], df3[topics3[1]], label=f'Rosbag 3', drawstyle='default', linestyle=':')
         self.axs[1].set_xlabel(x_axis1)
         self.axs[1].set_ylabel(topics2[1])
         self.axs[1].legend()
@@ -103,16 +111,19 @@ class PlotManager:
         # Get the closest index in the x data to the slider value
         idx1 = (self.df1[self.x_axis1] - val).abs().idxmin()
         idx2 = (self.df2[self.x_axis2] - val).abs().idxmin()
+        idx3 = (self.df3[self.x_axis3] - val).abs().idxmin()
 
         # Plot the points on the respective plots and store the references
         point1a, = self.axs[0].plot(self.df1[self.x_axis1].iloc[idx1], self.df1[self.topics1[0]].iloc[idx1], 'ro')
         point2a, = self.axs[0].plot(self.df2[self.x_axis2].iloc[idx2], self.df2[self.topics2[0]].iloc[idx2], 'ro')
+        point3a, = self.axs[0].plot(self.df3[self.x_axis3].iloc[idx3], self.df2[self.topics3[0]].iloc[idx3], 'ro')
 
         point1b, = self.axs[1].plot(self.df1[self.x_axis1].iloc[idx1], self.df1[self.topics1[1]].iloc[idx1], 'ro')
         point2b, = self.axs[1].plot(self.df2[self.x_axis2].iloc[idx2], self.df2[self.topics2[1]].iloc[idx2], 'ro')
+        point3b, = self.axs[1].plot(self.df3[self.x_axis3].iloc[idx3], self.df3[self.topics3[1]].iloc[idx3], 'ro')
 
         # Store the points so they can be removed next time
-        self.point_plots.extend([point1a, point2a, point1b, point2b])
+        self.point_plots.extend([point1a, point2a, point3a, point1b, point2b, point3b])
 
         # Plot the track position if applicable
         if self.track_plot is not None and self.track_pos_topics is not None:
