@@ -24,6 +24,14 @@ class PlotManager:
         df['__time'] = df['__time'] - t
         df = df[df['__time'] >= 0]
         return df
+    
+    def shift_y_data(self, df, topics, shift_amount):
+        """Shifts the Y-axis values of the specified topics by a given amount."""
+        df_shifted = df.copy()  # Create a copy to avoid modifying the original dataframe
+        for topic in topics:
+            if topic in df_shifted.columns:
+                df_shifted[topic] += shift_amount  # Apply the shift
+        return df_shifted
 
     def plot_data(self, df1, df2, df3, topics1, topics2, topics3, x_axis1, x_axis2, x_axis3, y_lims=None, x_lims=None, auto_y_axis=False, custom_x_limits=False, plot_track_pos=False, track_pos_topics=None):
         #topics 1 is all the data for file 1

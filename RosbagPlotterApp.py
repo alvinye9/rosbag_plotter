@@ -80,20 +80,30 @@ class DataPlotterApp:
         dropdown3b.grid(row=8, column=1, padx=5, pady=5)
         tk.Label(self.root, text="Topic 2 (Bottom Plot):").grid(row=8, column=0, padx=5, pady=5)
 
+        # Y-Axis Shift Entry for file 1
+        tk.Label(self.root, text="Y-Axis Shift 1, 2 (resp) :").grid(row=18, column=0, padx=5, pady=5)
+        self.y_shift1_entry = tk.Entry(self.root, width=10)
+        self.y_shift1_entry.grid(row=18, column=1, padx=5, pady=5)
+        self.y_shift1_entry.insert(0, "0.0")
+
         # Shift seconds for file 1
         tk.Label(self.root, text="X-axis left-shift for Rosbags 1, 2, 3 (resp.):").grid(row=9, column=0, padx=5, pady=5)
         self.entry_shift1 = tk.Entry(self.root, width=7)
         self.entry_shift1.grid(row=10, column=0, padx=3, pady=5)
         self.entry_shift1.insert(0, "0.0")
 
+
+        # Y-Axis Shift Entry for file 2
+        self.y_shift2_entry = tk.Entry(self.root, width=10)
+        self.y_shift2_entry.grid(row=18, column=2, padx=5, pady=5)
+        self.y_shift2_entry.insert(0, "0.0")
+        
         # Shift seconds for file 2
-        # tk.Label(self.root, text="X-axis left-shift for Rosbag 2:").grid(row=10, column=0, padx=5, pady=5)
         self.entry_shift2 = tk.Entry(self.root, width=7)
         self.entry_shift2.grid(row=10, column=1, padx=3, pady=5)
         self.entry_shift2.insert(0, "0.0")
         
         # Shift seconds for file 3
-        # tk.Label(self.root, text="X-axis left-shift for Rosbag 3:").grid(row=11, column=0, padx=5, pady=5)
         self.entry_shift3 = tk.Entry(self.root, width=7)
         self.entry_shift3.grid(row=10, column=2, padx=3, pady=5)
         self.entry_shift3.insert(0, "0.0")
@@ -190,6 +200,9 @@ class DataPlotterApp:
             shift_seconds = float(self.entry_shift1.get())
             shift_seconds_2 = float(self.entry_shift2.get())
             shift_seconds_3 = float(self.entry_shift3.get())
+            shift_y = float(self.y_shift1_entry.get())
+            shift_y_2 = float(self.y_shift2_entry.get())
+            
         except ValueError:
             messagebox.showerror("Error", "Invalid shift seconds.")
             return
@@ -251,7 +264,20 @@ class DataPlotterApp:
             df1_shifted = self.plot_manager.shift_data(df1.copy(), shift_seconds)
             df2_shifted = self.plot_manager.shift_data(df2.copy(), shift_seconds_2)
 
-            self.plot_manager.plot_data(df1_shifted, df2_shifted, df3_shifted, topics1, topics2, topics3, x_axis1, x_axis2, x_axis3, y_lims=y_limits, x_lims=x_limits, auto_y_axis=auto_y_axis, custom_x_limits=custom_x_limits, plot_track_pos=plot_track_positions, track_pos_topics= track_position_topics)
+            # Apply Y-axis shifts
+            df1_shifted_y = self.plot_manager.shift_y_data(df1_shifted.copy(), [topics1[0]], shift_y)
+            # df1_shifted_y = self.plot_manager.shift_y_data(df1_shifted.copy(), [topics1[1]], shift_y)
+            df2_shifted_y = self.plot_manager.shift_y_data(df2_shifted.copy(), [topics2[0]], shift_y_2)
+            # df2_shifted_y = self.plot_manager.shift_y_data(df2_shifted.copy(), [topics2[1]], shift_y_2)
+                
+            self.plot_manager.plot_data(
+                df1_shifted_y, df2_shifted_y, df3_shifted, 
+                topics1, topics2, topics3, 
+                x_axis1, x_axis2, x_axis3, 
+                y_lims=y_limits, x_lims=x_limits, 
+                auto_y_axis=auto_y_axis, custom_x_limits=custom_x_limits, 
+                plot_track_pos=plot_track_positions, track_pos_topics= track_position_topics
+            )
 
         except ValueError as ve:
             messagebox.showerror("Error", str(ve))
