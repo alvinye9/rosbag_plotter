@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+import numpy as np
 
 class PlotManager:
     """Data processing and plotting."""
@@ -91,6 +92,9 @@ class PlotManager:
         self.add_slider(df1[x_axis1])
 
         plt.tight_layout()
+        
+        self.compute_average_deviation()
+
         plt.show()
 
     def add_slider(self, x_data):
@@ -143,3 +147,34 @@ class PlotManager:
             
 
         self.figure.canvas.draw_idle()
+
+    def compute_average_deviation(self):
+        """Compute and print the average deviation between corresponding points in df1 and df2."""
+        if self.df1 is None or self.df2 is None:
+            print("Error: Dataframes are not set.")
+            return
+        
+        # Ensure the topic exists in both DataFrames
+        if self.topics1[0] not in self.df1.columns or self.topics2[0] not in self.df2.columns:
+            print(f"Error: Topic '{self.topics1[0]}' not found in df1 or '{self.topics2[0]}' not found in df2.")
+            return
+        
+        # Interpolate missing values to ensure alignment
+        df1_interp = self.df1.set_index(self.x_axis1)[self.topics1[0]].interpolate().dropna()
+        df2_interp = self.df2.set_index(self.x_axis2)[self.topics2[0]].interpolate().dropna()
+
+        # Find common time indices
+        common_times = df1_interp.index.intersection(df2_interp.index)
+
+        if common_times.empty:
+            print("No matching time points found for deviation calculation.")
+            return
+
+        # Compute absolute differences
+        deviations = np.abs(df1_interp.loc[common_times] - df2_interp.loc[common_times])
+
+        # Compute mean deviation
+        avg_deviation = np.nanmean(deviations)  # Ignore NaN values in case any remain
+
+        print(f"Average Deviation between {self.topics1[0]} in Rosbag 1 and Rosbag 2: {avg_deviation:.4f}")
+
