@@ -54,7 +54,7 @@ class PlotManager:
 
         # Plot first topic for each file
         self.axs[0].plot(df1[x_axis1], df1[topics1[0]], label=f'Rosbag 1', drawstyle='default')
-        self.axs[0].plot(df2[x_axis2], df2[topics2[0]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
+        self.axs[0].plot(df2[x_axis2], df2[topics2[0]], label=f'Rosbag 2', drawstyle='default', linestyle='-')
         if df3 is not None:
             self.axs[0].plot(df3[x_axis3], df3[topics3[0]], label=f'Rosbag 3', drawstyle='default', linestyle=':')
         self.axs[0].set_xlabel(x_axis1)
@@ -67,7 +67,7 @@ class PlotManager:
 
         # Plot second topic for each file
         self.axs[1].plot(df1[x_axis1], df1[topics1[1]], label=f'Rosbag 1', drawstyle='default')
-        self.axs[1].plot(df2[x_axis2], df2[topics2[1]], label=f'Rosbag 2', drawstyle='default', linestyle='--')
+        self.axs[1].plot(df2[x_axis2], df2[topics2[1]], label=f'Rosbag 2', drawstyle='default', linestyle='-')
         if df3 is not None:
             self.axs[1].plot(df3[x_axis3], df3[topics3[1]], label=f'Rosbag 3', drawstyle='default', linestyle=':')
         self.axs[1].set_xlabel(x_axis1)
@@ -148,20 +148,56 @@ class PlotManager:
 
         self.figure.canvas.draw_idle()
 
+    # def compute_average_deviation(self):
+    #     """Compute and print the average deviation between corresponding points in df1 and df2."""
+    #     if self.df1 is None or self.df2 is None:
+    #         print("Error: Dataframes are not set.")
+    #         return
+        
+    #     # Ensure the topic exists in both DataFrames
+    #     if self.topics1[0] not in self.df1.columns or self.topics2[0] not in self.df2.columns:
+    #         print(f"Error: Topic '{self.topics1[0]}' not found in df1 or '{self.topics2[0]}' not found in df2.")
+    #         return
+        
+    #     # Interpolate missing values to ensure alignment
+    #     df1_interp = self.df1.set_index(self.x_axis1)[self.topics1[0]].interpolate().dropna()
+    #     df2_interp = self.df2.set_index(self.x_axis2)[self.topics2[0]].interpolate().dropna()
+
+    #     # Find common time indices
+    #     common_times = df1_interp.index.intersection(df2_interp.index)
+
+    #     if common_times.empty:
+    #         print("No matching time points found for deviation calculation.")
+    #         return
+
+    #     # Compute absolute differences
+    #     deviations = np.abs(df1_interp.loc[common_times] - df2_interp.loc[common_times])
+
+    #     # Compute mean deviation
+    #     avg_deviation = np.nanmean(deviations)  # Ignore NaN values in case any remain
+
+    #     print(f"Average Deviation between {self.topics1[0]} in Rosbag 1 and Rosbag 2: {avg_deviation:.4f}")
+    
     def compute_average_deviation(self):
-        """Compute and print the average deviation between corresponding points in df1 and df2."""
+        """Compute and print the average deviation between corresponding points in df1 and df2 within the plotted range."""
         if self.df1 is None or self.df2 is None:
             print("Error: Dataframes are not set.")
             return
         
-        # Ensure the topic exists in both DataFrames
         if self.topics1[0] not in self.df1.columns or self.topics2[0] not in self.df2.columns:
             print(f"Error: Topic '{self.topics1[0]}' not found in df1 or '{self.topics2[0]}' not found in df2.")
             return
         
-        # Interpolate missing values to ensure alignment
-        df1_interp = self.df1.set_index(self.x_axis1)[self.topics1[0]].interpolate().dropna()
-        df2_interp = self.df2.set_index(self.x_axis2)[self.topics2[0]].interpolate().dropna()
+        # Get the current x-axis limits
+        x_min, x_max = self.axs[0].get_xlim()
+
+        # Filter data within the x-axis limits
+        df1_filtered = self.df1[(self.df1[self.x_axis1] >= x_min) & (self.df1[self.x_axis1] <= x_max)]
+        df2_filtered = self.df2[(self.df2[self.x_axis2] >= x_min) & (self.df2[self.x_axis2] <= x_max)]
+
+        # Interpolate missing values
+        df1_interp = df1_filtered.set_index(self.x_axis1)[self.topics1[0]].interpolate().dropna()
+        df2_interp = df2_filtered.set_index(self.x_axis2)[self.topics2[0]].interpolate().dropna()
 
         # Find common time indices
         common_times = df1_interp.index.intersection(df2_interp.index)
@@ -174,7 +210,8 @@ class PlotManager:
         deviations = np.abs(df1_interp.loc[common_times] - df2_interp.loc[common_times])
 
         # Compute mean deviation
-        avg_deviation = np.nanmean(deviations)  # Ignore NaN values in case any remain
+        avg_deviation = np.nanmean(deviations)
 
-        print(f"Average Deviation between {self.topics1[0]} in Rosbag 1 and Rosbag 2: {avg_deviation:.4f}")
+        print(f"Average Deviation within plotted range ({x_min:.2f} to {x_max:.2f}) between {self.topics1[0]} in Rosbag 1 and Rosbag 2: {avg_deviation:.4f}")
+
 
