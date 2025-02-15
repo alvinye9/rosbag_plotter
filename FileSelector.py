@@ -19,7 +19,13 @@ class FileSelector:
     def populate_dropdown(self, file_path, dropdown_vars, dropdowns):
         try:
             df = pd.read_csv(file_path)
-            topics = df.columns.tolist()
+            # topics = df.columns.tolist()
+            topics = [col for col in df.columns if 'vstate' not in col.lower()]  # Exclude columns containing 'vstate'
+
+            if not topics:  # Handle case where no valid topics remain
+                messagebox.showwarning("Warning", "No valid topics available after filtering.")
+                return
+            
             for dropdown_var, dropdown in zip(dropdown_vars, dropdowns):
                 dropdown['menu'].delete(0, 'end')
                 for topic in topics:

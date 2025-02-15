@@ -19,6 +19,7 @@ class PlotManager:
         self.track_plot = None
         self.track_position_points = []
         self.track_pos_topics = None
+        self.using_MAD = True #Mean Absolute Deviation
 
     @staticmethod
     def shift_data(df, t):
@@ -147,36 +148,6 @@ class PlotManager:
             
 
         self.figure.canvas.draw_idle()
-
-    # def compute_average_deviation(self):
-    #     """Compute and print the average deviation between corresponding points in df1 and df2."""
-    #     if self.df1 is None or self.df2 is None:
-    #         print("Error: Dataframes are not set.")
-    #         return
-        
-    #     # Ensure the topic exists in both DataFrames
-    #     if self.topics1[0] not in self.df1.columns or self.topics2[0] not in self.df2.columns:
-    #         print(f"Error: Topic '{self.topics1[0]}' not found in df1 or '{self.topics2[0]}' not found in df2.")
-    #         return
-        
-    #     # Interpolate missing values to ensure alignment
-    #     df1_interp = self.df1.set_index(self.x_axis1)[self.topics1[0]].interpolate().dropna()
-    #     df2_interp = self.df2.set_index(self.x_axis2)[self.topics2[0]].interpolate().dropna()
-
-    #     # Find common time indices
-    #     common_times = df1_interp.index.intersection(df2_interp.index)
-
-    #     if common_times.empty:
-    #         print("No matching time points found for deviation calculation.")
-    #         return
-
-    #     # Compute absolute differences
-    #     deviations = np.abs(df1_interp.loc[common_times] - df2_interp.loc[common_times])
-
-    #     # Compute mean deviation
-    #     avg_deviation = np.nanmean(deviations)  # Ignore NaN values in case any remain
-
-    #     print(f"Average Deviation between {self.topics1[0]} in Rosbag 1 and Rosbag 2: {avg_deviation:.4f}")
     
     def compute_average_deviation(self):
         """Compute and print the average deviation between corresponding points in df1 and df2 within the plotted range."""
@@ -206,11 +177,17 @@ class PlotManager:
             print("No matching time points found for deviation calculation.")
             return
 
-        # Compute absolute differences
-        deviations = np.abs(df1_interp.loc[common_times] - df2_interp.loc[common_times])
+        if self.using_MAD:
+            # Compute absolute differences
+            deviations = np.abs(df1_interp.loc[common_times] - df2_interp.loc[common_times])
+             # Compute mean of abs deviations
+            avg_deviation = np.nanmean(deviations)           
+        else:
+            # Compute differences
+            deviations = df1_interp.loc[common_times] - df2_interp.loc[common_times]
+            # Compute abs of the mean deviations
+            avg_deviation = np.abs(np.nanmean(deviations))
 
-        # Compute mean deviation
-        avg_deviation = np.nanmean(deviations)
 
         print(f"Average Deviation within plotted range ({x_min:.2f} to {x_max:.2f}) between {self.topics1[0]} in Rosbag 1 and Rosbag 2: {avg_deviation:.4f}")
 
